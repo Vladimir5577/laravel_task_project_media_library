@@ -2,49 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly AuthService $authService)
+    {
+    }
+
     public function register(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:4',
             'name' => 'required|string|max:255',
         ]);
 
-        $user = User::create([
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'name' => $request->name,
-        ]);
+        $result = $this->authService->register($validated);
 
-        $token = $user->createToken('API Token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+        return response()->json($result, 201);
     }
 
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = Auth::user();
-            $token = $user->createToken('TaskManagerApp')->plainTextToken;
+        $token = $this->authService->login($credentials);
 
-            return response()->json(['access_token' => $token]);
+        if (! $token) {
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['access_token' => $token]);
     }
 }
