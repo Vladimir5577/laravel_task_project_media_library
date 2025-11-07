@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use Illuminate\Http\Request;
+use App\Services\ProjectService;
 
 class ProjectController extends Controller
 {
+    public function __construct(
+        private readonly ProjectService $projectService
+    ) {
+    }
+
     public function index()
     {
-        return response()->json(Project::all());
+        return response()->json($this->projectService->getAll());
     }
 
     public function store(Request $request)
@@ -19,36 +24,29 @@ class ProjectController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $project = Project::create($validated);
+        $project = $this->projectService->create($validated);
 
         return response()->json($project, 201);
     }
 
     public function show($id)
     {
-        $project = Project::findOrFail($id);
-
-        return response()->json($project);
+        return response()->json($this->projectService->find($id));
     }
 
     public function update(Request $request, $id)
     {
-        $project = Project::findOrFail($id);
-
         $validated = $request->validate([
             'name' => 'nullable|string',
             'description' => 'nullable|string',
         ]);
 
-        $project->update($validated);
-
-        return response()->json($project);
+        return response()->json($this->projectService->update($id, $validated));
     }
 
     public function destroy($id)
     {
-        $project = Project::findOrFail($id);
-        $project->delete();
+        $this->projectService->delete($id);
 
         return response()->json(null, 204);
     }

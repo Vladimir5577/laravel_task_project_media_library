@@ -108,7 +108,7 @@ body
 
 ## Mailtrap
 
-Web interface MailHog:
+Web interface MailHog to track mails:
 > localhost:8025
 
 ## Testing
