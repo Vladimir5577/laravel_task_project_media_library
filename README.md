@@ -109,7 +109,7 @@ body
 ## Mailtrap
 
 Web interface MailHog:
-    > localhost:8025
+> localhost:8025
 
 ## Testing
 ```bash
